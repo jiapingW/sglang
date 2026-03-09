@@ -700,6 +700,7 @@ class Qwen3_5ForCausalLM(nn.Module):
             self.norm = GemmaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
         # For EAGLE3 support
         self.capture_aux_hidden_states = False
+        self.layers_to_capture = []
 
     def get_input_embeddings(self) -> nn.Embedding:
         return self.embed_tokens
@@ -1352,6 +1353,8 @@ class Qwen3_5MoeForConditionalGeneration(Qwen3VLForConditionalGeneration):
             num_logical_experts=text_config.num_experts,
             num_groups=None,
         )
+
+
 
 
 EntryClass = [Qwen3_5MoeForConditionalGeneration, Qwen3_5ForConditionalGeneration]
