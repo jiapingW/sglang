@@ -1148,7 +1148,7 @@ class Qwen3VLForConditionalGeneration(nn.Module):
             ]  # Specific layers for EAGLE3 support
         else:
             self.model.layers_to_capture = [val + 1 for val in layer_ids]
-        print('###################:',self.model.layers_to_capture,self.model)
+        # print('###################:',self.model.layers_to_capture,self.model)
 
 
 EntryClass = Qwen3VLForConditionalGeneration
