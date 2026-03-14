@@ -1135,20 +1135,48 @@ class Qwen3VLForConditionalGeneration(nn.Module):
                 weight_loader = getattr(param, "weight_loader", default_weight_loader)
                 weight_loader(param, loaded_weight)
 
+    # def set_eagle3_layers_to_capture(self, layer_ids: Optional[List[int]] = None):
+    #     self.capture_aux_hidden_states = True
+    #     self.model.capture_aux_hidden_states = True
+    #     if layer_ids is None:
+    #         num_layers = self.config.num_hidden_layers
+    #         self.model.layers_to_capture = [
+    #             2,
+    #             num_layers // 2,
+    #             num_layers - 3,
+    #         ]  # Specific layers for EAGLE3 support
+    #     else:
+    #         self.model.layers_to_capture = [val + 1 for val in layer_ids]
+    # print("EAGLE3 Capture Layer Idx",self.model.layers_to_capture)
 
     def set_eagle3_layers_to_capture(self, layer_ids: Optional[List[int]] = None):
         self.capture_aux_hidden_states = True
         self.model.capture_aux_hidden_states = True
+
         if layer_ids is None:
-            num_layers = self.config.num_hidden_layers
-            self.model.layers_to_capture = [
-                2,
-                num_layers // 2,
-                num_layers - 3,
-            ]  # Specific layers for EAGLE3 support
+            full_attn_layer_indices = [
+                i
+                for i, layer_type in enumerate(self.config.layers_block_type)
+                if layer_type == "attention"
+            ]
+
+            if len(full_attn_layer_indices) >= 3:
+                num_full_attn = len(full_attn_layer_indices)
+                self.model.layers_to_capture = [
+                    full_attn_layer_indices[0] + 1,
+                    full_attn_layer_indices[num_full_attn // 2] + 1,
+                    full_attn_layer_indices[-2] + 1,
+                ]
+                print(
+                    "Full Attention Layer Idx:",
+                    full_attn_layer_indices,
+                    " EAGLE3 Capture Layer Idx:",
+                    self.model.layers_to_capture,
+                )
+            else:
+                self.model.layers_to_capture = full_attn_layer_indices
         else:
             self.model.layers_to_capture = [val + 1 for val in layer_ids]
-        # print('###################:',self.model.layers_to_capture,self.model)
 
 
 EntryClass = Qwen3VLForConditionalGeneration
